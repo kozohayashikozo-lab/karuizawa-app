@@ -1,93 +1,87 @@
 import streamlit as st
-import requests
-import json
-from datetime import date
 import google.generativeai as genai
 
 # ==========================================
-# 1. あなたの専用設定
+# 1. 設定（APIキーを貼り付けてください）
 # ==========================================
-# 最新のAPIキーをここに貼り付けてください
-GEMINI_API_KEY = "AIzaSyCR1gN7-mfC1jsJxzWici2cVDwozgDsUnk"
+GEMINI_API_KEY = "AIzaSyCCecamXHkFXPT5J1gkIYXRjv5Sm4xkQDA"
 
-# あなたのGAS（Google Apps Script）のURLをここに貼り付けてください
-WEB_APP_URL = "ここにあなたのGASのURLを貼り付け"
-
-# AIの設定
 genai.configure(api_key=GEMINI_API_KEY)
-
-# 404対策：最新のモデル指定方法
+# 最新の安定モデルを指定
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# 施設リスト
-STATIONS = {"トランス軽井沢": 8, "軽井沢清風荘": 10, "ゆうせん軽井沢": 9, "オリックス軽井沢": 14}
-
-st.set_page_config(page_title="軽井沢実績システム", layout="wide")
-st.title("🎙️ 音声入力・実績報告")
+st.set_page_config(page_title="AI議事録・TODO生成", layout="wide")
+st.title("📝 AI議事録：即実行TODO生成くん")
+st.write("録音ファイルや声を解析して、次にやるべきことをリストアップします。")
 
 # ==========================================
-# 2. 音声録音セクション
+# 2. 音声の入力（録音またはファイルアップロード）
 # ==========================================
-st.subheader("ステップ1：音声で報告")
-audio_value = st.audio_input("マイクを押して話してください")
+st.subheader("1. 音声を準備する")
+tab1, tab2 = st.tabs(["マイクで録音", "ファイル（MP3等）をアップロード"])
 
-if audio_value:
-    if st.button("AIで解析する"):
-        with st.spinner("AIが聞き取り中..."):
+audio_data = None
+
+with tab1:
+    audio_record = st.audio_input("ここを押して話してください")
+    if audio_record:
+        audio_data = audio_record.read()
+
+with tab2:
+    audio_file = st.file_uploader("録音ファイルをドラッグ＆ドロップ", type=["mp3", "wav", "m4a"])
+    if audio_file:
+        audio_data = audio_file.read()
+
+# ==========================================
+# 3. AIによる解析
+# ==========================================
+if audio_data:
+    st.subheader("2. AIでTODOを生成する")
+    if st.button("議事録とTODOを作成", type="primary"):
+        with st.spinner("AIが会議を振り返り、タスクを整理しています..."):
             try:
-                # 音声データを読み込む
-                audio_data = audio_value.read()
+                # AIへの指示（プロンプト）
+                prompt = """
+                この音声を聞いて、以下の4つのセクションで議事録を作成してください。
+                特に「TODO」は具体的に、誰が何をすべきか明確にしてください。
+
+                1. 【決定事項】会議で決まったこと
+                2. 【TODOリスト】すぐ実行すべきタスク（チェックボックス形式 [ ] で記述）
+                3. 【重要ポイント】聞き漏らしてはいけない背景や理由
+                4. 【保留・次回】今回は決まらなかったこと、次回の課題
+                """
+
+                # 通信エラーを回避する丁寧な呼び出し
+                response = model.generate_content(
+                    contents=[
+                        {
+                            "parts": [
+                                {"text": prompt},
+                                {"mime_type": "audio/wav", "data": audio_data}
+                            ]
+                        }
+                    ]
+                )
+
+                st.success("作成完了しました！")
                 
-                # 【重要】404エラーを回避するための最も丁寧なデータ構成
-                contents = [
-                    {
-                        "parts": [
-                            {"text": "この音声を解析して、施設名、大人人数、子供人数、冷蔵庫1温度、冷蔵庫2温度、メモを日本語で抽出してください。"},
-                            {"mime_type": "audio/wav", "data": audio_data}
-                        ]
-                    }
-                ]
+                # 結果の表示
+                st.divider()
+                st.markdown(response.text)
                 
-                # AIに依頼
-                response = model.generate_content(contents=contents)
-                
-                st.success("解析成功！")
-                st.markdown(f"**【解析結果】**\n\n{response.text}")
-                
+                # コピペ用のエリア
+                st.subheader("そのままコピペ用")
+                st.code(response.text, language="text")
+
             except Exception as e:
                 st.error(f"解析エラー: {e}")
-                st.info("一度、この画面をリロード（再読み込み）してからもう一度試してみてください。")
+                st.info("APIキーが無効、またはモデル名が変更されている可能性があります。")
 
 # ==========================================
-# 3. 入力フォーム
+# 4. 便利なヒント
 # ==========================================
-st.divider()
-st.subheader("ステップ2：内容を確認して送信")
-
-with st.form("input_form"):
-    target_date = st.date_input("日付", date.today())
-    facility = st.selectbox("施設名", list(STATIONS.keys()))
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        adults = st.number_input("大人人数", 0)
-        children = st.number_input("子供人数", 0)
-    with col2:
-        temp1 = st.number_input("冷蔵庫1 温度", -30.0, 30.0, 0.0)
-        temp2 = st.number_input("冷蔵庫2 温度", -30.0, 30.0, 0.0)
-    
-    memo = st.text_area("メモ")
-    
-    if st.form_submit_button("スプレッドシートに保存"):
-        if WEB_APP_URL == "ここにあなたのGASのURLを貼り付け":
-            st.warning("GASのURLを設定してください")
-        else:
-            data = {
-                "date": str(target_date), "facility": facility,
-                "adults": adults, "children": children,
-                "temp1": temp1, "temp2": temp2, "memo": memo
-            }
-            res = requests.post(WEB_APP_URL, data=json.dumps(data))
-            if "Success" in res.text:
-                st.balloons()
-                st.success("保存完了！")
+st.sidebar.title("使い方ヒント")
+st.sidebar.info("""
+- 会議の録音だけでなく、自分へのボイスメモにも使えます。
+- 「今日やることを5つにまとめて」など、追加の要望がある場合は教えてください。
+""")
