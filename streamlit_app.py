@@ -8,7 +8,7 @@ import google.generativeai as genai
 # 1. あなたの専用設定
 # ==========================================
 GEMINI_API_KEY = "AIzaSyCCecamXHkFXPT5J1gkIYXRjv5Sm4xkQDA"
-WEB_APP_URL = "ここにウェブアプリ(GAS)のURLを貼り付け" # ←ここだけ忘れずに！
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7Zm-RxqCfRhZGLrhzslqdGgb0QvG2v8YpqQo_-jTdIpedcF7J0x9BdIjVX2Tqop3j3g/exec" # ←ここだけ忘れずに！
 
 # AIの設定
 genai.configure(api_key=GEMINI_API_KEY)
