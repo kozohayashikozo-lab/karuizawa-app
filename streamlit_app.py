@@ -7,22 +7,22 @@ import google.generativeai as genai
 # ==========================================
 # 1. あなたの専用設定
 # ==========================================
-# 新しく作成したAPIキーをここに貼り付けてください
+# 最新のAPIキーをここに貼り付けてください
 GEMINI_API_KEY = "AIzaSyCCecamXHkFXPT5J1gkIYXRjv5Sm4xkQDA"
 
 # あなたのGAS（Google Apps Script）のURLをここに貼り付けてください
 WEB_APP_URL = "ここにあなたのGASのURLを貼り付け"
 
-# AIの設定：404エラーを回避するための最も標準的な記述
+# AIの設定
 genai.configure(api_key=GEMINI_API_KEY)
 
-# モデル名をシンプルに指定（これでも404が出る場合は 'gemini-1.5-flash' に戻すなど試せます）
+# 404対策：最新のモデル指定方法
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # 施設リスト
 STATIONS = {"トランス軽井沢": 8, "軽井沢清風荘": 10, "ゆうせん軽井沢": 9, "オリックス軽井沢": 14}
 
-st.set_page_config(page_title="軽井沢 施設実績システム", layout="wide")
+st.set_page_config(page_title="軽井沢実績システム", layout="wide")
 st.title("🎙️ 音声入力・実績報告")
 
 # ==========================================
@@ -38,34 +38,31 @@ if audio_value:
                 # 音声データを読み込む
                 audio_data = audio_value.read()
                 
-                # 指示文（プロンプト）
-                prompt = "この音声を解析し、施設名、大人人数、子供人数、冷蔵庫1温度、冷蔵庫2温度、メモを抽出して日本語で答えてください。"
+                # 【重要】404エラーを回避するための最も丁寧なデータ構成
+                contents = [
+                    {
+                        "parts": [
+                            {"text": "この音声を解析して、施設名、大人人数、子供人数、冷蔵庫1温度、冷蔵庫2温度、メモを日本語で抽出してください。"},
+                            {"mime_type": "audio/wav", "data": audio_data}
+                        ]
+                    }
+                ]
                 
-                # AIへの依頼（最新のパーツ指定形式）
-                response = model.generate_content(
-                    contents=[
-                        {
-                            "parts": [
-                                {"text": prompt},
-                                {"mime_type": "audio/wav", "data": audio_data}
-                            ]
-                        }
-                    ]
-                )
+                # AIに依頼
+                response = model.generate_content(contents=contents)
                 
                 st.success("解析成功！")
                 st.markdown(f"**【解析結果】**\n\n{response.text}")
                 
             except Exception as e:
-                # 万が一のエラー表示
                 st.error(f"解析エラー: {e}")
-                st.info("APIキーが有効になるまで数分かかる場合があります。少し待ってから再度お試しください。")
+                st.info("一度、この画面をリロード（再読み込み）してからもう一度試してみてください。")
 
 # ==========================================
 # 3. 入力フォーム
 # ==========================================
 st.divider()
-st.subheader("ステップ2：最終確認と送信")
+st.subheader("ステップ2：内容を確認して送信")
 
 with st.form("input_form"):
     target_date = st.date_input("日付", date.today())
