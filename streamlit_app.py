@@ -8,7 +8,7 @@ import google.generativeai as genai
 # 1. あなたの専用設定
 # ==========================================
 # 最新のAPIキーをここに貼り付けてください
-GEMINI_API_KEY = "AIzaSyCCecamXHkFXPT5J1gkIYXRjv5Sm4xkQDA"
+GEMINI_API_KEY = "AIzaSyCR1gN7-mfC1jsJxzWici2cVDwozgDsUnk"
 
 # あなたのGAS（Google Apps Script）のURLをここに貼り付けてください
 WEB_APP_URL = "ここにあなたのGASのURLを貼り付け"
