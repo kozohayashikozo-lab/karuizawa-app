@@ -11,7 +11,7 @@ import google.generativeai as genai
 GEMINI_API_KEY = "AIzaSyCCecamXHkFXPT5J1gkIYXRjv5Sm4xkQDA"
 
 # ★ここに、前回作成したGoogleスプレッドシート(GAS)のURLを貼り付けてください
-WEB_APP_URL = "ここにウェブアプリのURLを貼り付け"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7Zm-RxqCfRhZGLrhzslqdGgb0QvG2v8YpqQo_-jTdIpedcF7J0x9BdIjVX2Tqop3j3g/exec"
 
 # AIの設定（404エラー対策：最も安定した指定方法に変更）
 genai.configure(api_key=GEMINI_API_KEY)
