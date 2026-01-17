@@ -12,7 +12,7 @@ WEB_APP_URL = "ここにあなたのGASのURLを貼り付け" # ←ここを忘�
 
 # AIの設定（ここを最も安定した最新版に修正しました）
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash-8b') # 名前を変更
+model = genai.GenerativeModel('gemini-1.5-flash') # 名前を変更
 
 STATIONS = {"トランス軽井沢": 8, "軽井沢清風荘": 10, "ゆうせん軽井沢": 9, "オリックス軽井沢": 14}
 
