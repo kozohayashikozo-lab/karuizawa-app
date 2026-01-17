@@ -12,7 +12,7 @@ WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7Zm-RxqCfRhZGLrhzslqdGg
 
 # AIの設定
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 STATIONS = {"トランス軽井沢": 8, "軽井沢清風荘": 10, "ゆうせん軽井沢": 9, "オリックス軽井沢": 14}
 
