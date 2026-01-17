@@ -8,7 +8,7 @@ import google.generativeai as genai
 # 1. あなたの専用設定
 # ==========================================
 # 先ほど教えていただいたAPIキーです
-GEMINI_API_KEY = "AIzaSyCCecamXHkFXPT5J1gkIYXRjv5Sm4xkQDA"
+GEMINI_API_KEY = "AIzaSyBmeHfmuAK-A-C4XoJcacdGYLksBgvL78U"
 
 # ★ここに、前回作成したGoogleスプレッドシート(GAS)のURLを貼り付けてください
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7Zm-RxqCfRhZGLrhzslqdGgb0QvG2v8YpqQo_-jTdIpedcF7J0x9BdIjVX2Tqop3j3g/exec"
