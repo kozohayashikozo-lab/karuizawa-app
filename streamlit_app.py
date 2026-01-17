@@ -2,72 +2,37 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 
-# --- 1. 基本設定 ---
-STATIONS = {
-    "トランス軽井沢": 8,
-    "軽井沢清風荘": 10,
-    "ゆうせん軽井沢": 9,
-    "オリックス軽井沢": 14
-}
-SECTIONS = ["フロント", "厨房", "サービス", "客室メンテ"]
+# --- 基本設定 ---
+STATIONS = {"トランス軽井沢": 8, "軽井沢清風荘": 10, "ゆうせん軽井沢": 9, "オリックス軽井沢": 14}
 
-st.set_page_config(page_title="軽井沢4施設・経営集約システム", layout="wide")
+# ★【重要】ここにコピーしたスプレッドシートのURLを貼り付けてください！
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1Q20YXlNFSqLbR6wnFeLjARGYxzlI686XpdzbJhBz8Ok/edit?usp=sharing"
 
-# --- 2. サイドメニュー（リーダー用・支配人用切り替え） ---
-menu = st.sidebar.radio("メニュー選択", ["【支配人】日次入力", "【リーダー】全体ダッシュボード"])
+st.set_page_config(page_title="軽井沢4施設管理", layout="wide")
 
-# --- 3. 支配人入力画面 ---
-if menu == "【支配人】日次入力":
-    st.title("📱 日次営業実績・シフト報告")
+st.title("📱 軽井沢4施設 実績入力")
+
+# 支配人用の入力フォーム
+with st.form("input_form"):
+    target_date = st.date_input("日付", date.today())
+    facility = st.selectbox("施設名", list(STATIONS.keys()))
     
-    with st.form("daily_report"):
-        col1, col2 = st.columns(2)
-        with col1:
-            target_date = st.date_input("報告日", date.today())
-            facility = st.selectbox("施設名", list(STATIONS.keys()))
-            rooms = st.number_input("実稼働客室数", min_value=0, max_value=STATIONS[facility])
-        with col2:
-            adults = st.number_input("宿泊人数（大人）", min_value=0)
-            children = st.number_input("宿泊人数（子供）", min_value=0)
-            meals = st.number_input("夕食提供数", min_value=0)
-
-        st.divider()
-        st.subheader("🍴 飲食原価管理")
-        cost = st.number_input("本日の食材仕入れ額 (円)", min_value=0, step=1000)
-        
-        st.divider()
-        st.subheader("🤝 ヘルプ要請・シフト状況")
-        help_status = st.select_slider(
-            "サービスセクションの状況",
-            options=["余裕あり", "適正", "ヘルプが必要"],
-            value="適正"
-        )
-        memo = st.text_area("特記事項（欠勤や機材トラブルなど）")
-        
-        submitted = st.form_submit_button("実績を送信する")
-        if submitted:
-            st.success(f"{facility}の {target_date} 実績を保存しました。")
-
-# --- 4. リーダー用ダッシュボード ---
-elif menu == "【リーダー】全体ダッシュボード":
-    st.title("📊 4施設経営ダッシュボード")
+    col1, col2 = st.columns(2)
+    with col1:
+        rooms = st.number_input("稼働客室数", 0, STATIONS[facility])
+        adults = st.number_input("大人人数", 0)
+        children = st.number_input("子供人数", 0)
+    with col2:
+        meals = st.number_input("夕食提供数", 0)
+        cost = st.number_input("本日の仕入れ額(円)", 0)
     
-    # 簡易的なサマリー表示（本来はDBから取得）
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("全体稼働率", "85%", "+5%")
-    col2.metric("総宿泊人数", "124名", "前日比 +12")
-    col3.metric("推定平均単価", "24,500円", "-200円")
-    col4.metric("原価アラート", "1施設", "要チェック")
-
-    st.divider()
+    help_status = st.select_slider("サービス人員の状況", ["余裕あり", "適正", "ヘルプ必要"])
+    memo = st.text_area("特記事項（欠勤・トラブル等）")
     
-    # シフト過不足ヒートマップ（イメージ）
-    st.subheader("📍 施設間ヘルプ調整状況")
-    shift_data = pd.DataFrame({
-        "施設名": STATIONS.keys(),
-        "サービス状況": ["適正", "⚠️ヘルプ必要", "✅余裕あり", "適正"],
-        "不足人数": [0, 2, -1, 0]
-    })
-    st.table(shift_data)
-
-    st.info("💡 軽井沢清風荘で2名不足しています。ゆうせん軽井沢に余裕があるため、LINEでの調整を推奨します。")
+    submitted = st.form_submit_button("実績を送信する")
+    
+    if submitted:
+        # ここでスプレッドシートへ送るデータを作る
+        st.success(f"{facility}の実績を送信しました！")
+        st.balloons()
+        st.write("※データはスプレッドシートに保存される設定に移行します。")
